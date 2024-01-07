@@ -16,7 +16,7 @@ function enc_dec($str, $type = "enc", $time = '')
         $de = base64_decode($str);
         $dec = explode("|", $de);
         if (empty($time)) {
-            if(isset($dec[1])) {
+            if (isset($dec[1])) {
                 return $dec[1];
             }
             return 0;
@@ -33,10 +33,11 @@ $allFilters = isset($_GET['allFilters']) ? $_GET['allFilters'] : 1;
 $monthFilter = isset($_GET['monthFilter']) ? $_GET['monthFilter'] : 0;
 $monthNum = isset($_GET['monthNum']) ? $_GET['monthNum'] : null;
 $subjectFilter = isset($_GET['subjectFilter']) ? $_GET['subjectFilter'] : 0;
-$subjectName = isset($_GET['subjectName']) ? $_GET['subjectName'] : null;
+$subjectId = isset($_GET['subjectId']) ? $_GET['subjectId'] : null;
 
 $query = "SELECT 
     s.subName,
+    s.subId,
     s.bgColor,
     s.borderColor,
     MONTH(r.reportDate) AS report_month,
@@ -48,17 +49,11 @@ FROM
     studentReportChart r ON s.subId = r.subId
 WHERE r.dlb_u_id =$userid and 
     r.reportDate >= '$one_year_ago'";
-
-// GROUP BY 
-// report_month, s.subId order by reportDate asc";
-
 if ($allFilters > 0) {
     $query .= " GROUP BY 
     report_month, s.subName order by reportDate asc";
 
 } else if ($monthFilter > 0) {
-    // $query .= " GROUP BY 
-    // report_month, month_name order by reportDate asc";
     $query = "SELECT 
     s.subName,
     s.bgColor,
@@ -73,23 +68,13 @@ JOIN
 order by reportDate asc";
 
 } else if ($subjectFilter > 0) {
-    // $query .= " GROUP BY 
-    // report_month, month_name order by reportDate asc";
-    $query = "SELECT 
-    s.subName,
-    s.bgColor,
-    s.borderColor,
-        MONTH(r.reportDate) AS report_month,
-    MONTHNAME(r.reportDate) AS month_name,
-    AVG(r.totalPer) AS average_percentage
-FROM 
-    subject s
-JOIN 
-    studentReportChart r ON s.subId = r.subId where r.dlb_u_id =$userid AND s.subName = '$subjectName' AND r.reportDate >= '$one_year_ago' GROUP by report_month
+    $query = "SELECT s.subName, s.bgColor, s.borderColor, MONTH(r.reportDate) AS report_month,
+    MONTHNAME(r.reportDate) AS month_name, AVG(r.totalPer) AS average_percentage
+FROM subject s JOIN 
+    studentReportChart r ON s.subId = r.subId where r.dlb_u_id =$userid AND s.subId = '$subjectId' AND r.reportDate >= '$one_year_ago' GROUP by report_month
 order by reportDate asc";
 
 }
-// report_month,  order by reportDate asc";
 
 $result = mysqli_query($db, $query);
 
@@ -104,8 +89,7 @@ if (empty($data)) {
     $apiSuccess = 1;
 }
 
-
 // Return the data as JSON
 header('Content-Type: application/json');
-echo json_encode(array("apiSuccess" => $apiSuccess,"responsePacket"=> $data));
+echo json_encode(array("apiSuccess" => $apiSuccess, "responsePacket" => $data));
 ?>

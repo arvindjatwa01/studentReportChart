@@ -37,20 +37,40 @@ var ctx = $("#myChart");
 var myChart;
 
 // get Report Chart
-const getReportChart = (months, convertedData, allFilters = true, data) => {
+const getReportChart = (
+  monthByFilter,
+  months,
+  convertedData,
+  allFilters = true,
+  data
+) => {
   if (myChart != undefined) {
     myChart.destroy();
   }
 
   myChart = new Chart(ctx, {
+    // type: !allFilters && !monthByFilter ? "line" : "bar",
     type: "bar",
     data: getChartData(months, convertedData, allFilters, data),
     options: {
       scales: {
         x: {
           beginAtZero: true,
-          categoryPercentage: 0.8, // Adjust the width of the bars on the x-axis
-          barPercentage: 0.8, // Adjust the width of the bars on the x-axis
+          categoryPercentage: 0.8,
+          barPercentage: 0.8,
+          display: true,
+          title: {
+            display: true,
+            text: !allFilters && monthByFilter ? "Subjects": "Months",
+            color: "#911",
+            font: {
+              family: "Comic Sans MS",
+              size: 20,
+              weight: "bold",
+              lineHeight: 1.2,
+            },
+            padding: { top: 20, left: 0, right: 0, bottom: 0 },
+          },
         },
         y: {
           type: "linear",
@@ -59,11 +79,39 @@ const getReportChart = (months, convertedData, allFilters = true, data) => {
           ticks: {
             stepSize: 10,
             callback: function (value) {
-              return value + "%";
+              return value;
             },
+          },
+          display: true,
+          title: {
+            display: true,
+            text: "Percentage",
+            color: "#000000",
+            font: {
+              family: "Times",
+              size: 20,
+              style: "normal",
+              lineHeight: 1.2,
+              weight: "bold",
+            },
+            padding: { top: 20, left: 0, right: 0, bottom: 0 },
           },
         },
       },
+      // plugins: {
+      //   legend: {
+      //     display: true,
+      //     position: "bottom",
+      //     labels: {
+      //       boxWidth: 50,
+      //       color: "black",
+      //       font: {
+      //         size: 24,
+      //         weight: "bold",
+      //       },
+      //     },
+      //   },
+      // },
     },
   });
 };
@@ -72,6 +120,11 @@ const getReportChart = (months, convertedData, allFilters = true, data) => {
 const handleGetChartFilter = (e, monthFilter) => {
   $("button").removeClass("btn-secondary"); // Remove highlight class from all buttons
   $(e.target).addClass("btn-secondary"); // Add highlight class to the clicked button
+
+  let subjectId = null;
+  if (!monthFilter) {
+    subjectId = $(e.currentTarget).data("subjectid");
+  }
 
   const monthIndex = monthNames.indexOf(e.target.innerText);
   $.ajax({
@@ -83,7 +136,8 @@ const handleGetChartFilter = (e, monthFilter) => {
       monthFilter: monthFilter ? 1 : 0,
       monthNum: monthFilter ? monthIndex + 1 : null,
       subjectFilter: !monthFilter ? 1 : 0,
-      subjectName: monthFilter ? null : e.target.innerText,
+      subjectId: subjectId,
+      // subjectName: monthFilter ? null : e.target.innerText,
       userReport: checkParameters() ? param1Value : "",
     },
     success: function (data) {
@@ -107,7 +161,8 @@ const handleGetChartFilter = (e, monthFilter) => {
         !monthFilter
       );
       getReportChart(
-        monthFilter ? subjects : months,
+        monthFilter,
+        monthFilter ? subjects.map((sub) => sub.subjectName) : months,
         convertedData,
         false,
         data.responsePacket
@@ -125,9 +180,7 @@ const getConvertedData = (
   monthFilter = false,
   subjectFilter = false
 ) => {
-  const result = {};
   let subresult = {};
-
   inputData.forEach((item) => {
     const month = item.month_name.toLowerCase(); // Convert month name to lowercase
     const subject = item.subName;
@@ -144,8 +197,11 @@ const getConvertedData = (
       }
 
       // Subject name
-      if (!subjects.includes(subject)) {
-        subjects.push(subject);
+      if (!subjects.some((obj) => obj.subjectId === item.subId)) {
+        subjects.push({
+          subjectId: item.subId,
+          subjectName: subject,
+        });
       }
     }
 
@@ -167,6 +223,7 @@ const getConvertedData = (
         borderColor: item.borderColor,
         borderWidth: 1,
         barThickness: 10,
+        // type: !monthFilter && item.subName === "English" ? "line": "bar",
       };
     }
 
@@ -193,6 +250,7 @@ const getChartData = (xAxisLabels, responseData = {}, allFilters, response) => {
     }
 
     for (let key in responseData) {
+      console.log("key ---- ", key);
       datasetsArr.push({
         label: key,
         data: [
@@ -221,7 +279,7 @@ const getReport = () => {
       monthFilter: 0,
       monthNum: null,
       subjectFilter: 0,
-      subjectName: null,
+      subjectId: null,
       userReport: checkParameters() ? param1Value : "",
     },
     success: function (data) {
@@ -242,21 +300,22 @@ const getReport = () => {
       const convertedData = getConvertedData(data.responsePacket);
 
       var monthName = "";
-      for (let month of months) {
+      // for (let month of months) {
+      for (let month of monthNames) {
         monthName =
           monthName +
-          `<div class="col-lg-2 col-md-3 col-sm-3 my-2"><button class="btn btn-primary mx-2 monthBtn" onclick="handleGetChartFilter(event, true)">${month}</button></div>`;
+          `<div class="col-lg-2 col-md-3 col-sm-3 d-flex justify-content-center align-items-center my-2"><button class="btn btn-primary mx-2 monthBtn" onclick="handleGetChartFilter(event, true)">${month}</button></div>`;
       }
       $("#months").html(monthName);
 
       var subjectName = "";
-      for (let subject of subjects) {
+      for (let row of subjects) {
         subjectName =
           subjectName +
-          `<div class="col-lg-2 col-md-3 col-sm-3 my-2 mx-3"><button class="btn btn-primary" onclick="handleGetChartFilter(event, false)">${subject}</button></div>`;
+          `<div class="col-lg-2 col-md-3 col-sm-3 d-flex justify-content-center align-items-center my-2 mx-3"><button class="btn btn-primary" data-subjectid="${row.subjectId}" onclick="handleGetChartFilter(event, false)">${row.subjectName}</button></div>`;
       }
       $("#subjects").html(subjectName);
-      getReportChart(months, convertedData);
+      getReportChart(false, months, convertedData);
     },
     error: function (error) {
       console.error("Error:", error);
