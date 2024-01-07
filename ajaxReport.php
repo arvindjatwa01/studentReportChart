@@ -6,8 +6,29 @@ if (mysqli_connect_errno()) {
 }
 // Assuming you have already established a MySQL connection
 
-$one_year_ago = date('Y-m-d', strtotime('-12 months'));
+function enc_dec($str, $type = "enc", $time = '')
+{
+    $key = 'crypt';
+    if ($type == 'enc') {
+        $encrypted = base64_encode(time() . "|" . $str);
+        return $encrypted;
+    } else {
+        $de = base64_decode($str);
+        $dec = explode("|", $de);
+        if (empty($time)) {
+            if(isset($dec[1])) {
+                return $dec[1];
+            }
+            return 0;
+        } else {
+            return array($dec[0], $dec[1]);
+        }
+    }
+}
 
+$one_year_ago = date('Y-m-d', strtotime('-12 months'));
+$userid = isset($_GET['userReport']) ? $_GET['userReport'] : 0;
+$userid = enc_dec($userid, 'dec', '');
 $allFilters = isset($_GET['allFilters']) ? $_GET['allFilters'] : 1;
 $monthFilter = isset($_GET['monthFilter']) ? $_GET['monthFilter'] : 0;
 $monthNum = isset($_GET['monthNum']) ? $_GET['monthNum'] : null;
@@ -25,7 +46,7 @@ FROM
     subject s
  JOIN 
     studentReportChart r ON s.subId = r.subId
-WHERE 
+WHERE r.dlb_u_id =$userid and 
     r.reportDate >= '$one_year_ago'";
 
 // GROUP BY 
@@ -48,7 +69,7 @@ if ($allFilters > 0) {
 FROM 
     subject s
 JOIN 
-    studentReportChart r ON s.subId = r.subId where MONTH(r.reportDate) = $monthNum AND r.reportDate >= '$one_year_ago' GROUP by s.subName
+    studentReportChart r ON s.subId = r.subId where r.dlb_u_id =$userid AND MONTH(r.reportDate) = $monthNum AND r.reportDate >= '$one_year_ago' GROUP by s.subName
 order by reportDate asc";
 
 } else if ($subjectFilter > 0) {
@@ -64,7 +85,7 @@ order by reportDate asc";
 FROM 
     subject s
 JOIN 
-    studentReportChart r ON s.subId = r.subId where s.subName = '$subjectName' AND r.reportDate >= '$one_year_ago' GROUP by report_month
+    studentReportChart r ON s.subId = r.subId where r.dlb_u_id =$userid AND s.subName = '$subjectName' AND r.reportDate >= '$one_year_ago' GROUP by report_month
 order by reportDate asc";
 
 }
@@ -77,8 +98,14 @@ $data = array();
 while ($row = mysqli_fetch_assoc($result)) {
     $data[] = $row;
 }
+if (empty($data)) {
+    $apiSuccess = 0;
+} else {
+    $apiSuccess = 1;
+}
+
 
 // Return the data as JSON
 header('Content-Type: application/json');
-echo json_encode($data);
+echo json_encode(array("apiSuccess" => $apiSuccess,"responsePacket"=> $data));
 ?>
