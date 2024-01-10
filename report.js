@@ -33,6 +33,70 @@ const monthNames = [
   "Dec",
 ];
 
+const chartScalesX = (allFilters, monthByFilter) => {
+  return {
+    beginAtZero: true,
+    categoryPercentage: 0.8,
+    barPercentage: 0.8,
+    display: true,
+    title: {
+      display: true,
+      text: !allFilters && monthByFilter ? "Subjects" : "Months",
+      color: "#911",
+      font: {
+        family: "Comic Sans MS",
+        size: 20,
+        weight: "bold",
+        lineHeight: 1.2,
+      },
+      padding: { top: 20, left: 0, right: 0, bottom: 0 },
+    },
+  };
+};
+
+const chartScalesY = (allFilters, monthByFilter) => {
+  return {
+    type: "linear",
+    beginAtZero: true,
+    max: 100, // Adjust this if your data range is different
+    ticks: {
+      stepSize: 10,
+      callback: function (value) {
+        return value;
+      },
+    },
+    display: true,
+    title: {
+      display: true,
+      text: "Percentage",
+      color: "#000000",
+      font: {
+        family: "Times",
+        size: 20,
+        style: "normal",
+        lineHeight: 1.2,
+        weight: "bold",
+      },
+      padding: { top: 20, left: 0, right: 0, bottom: 0 },
+    },
+  };
+};
+
+const chartPlugins = {
+  legend: {
+    display: true,
+    position: "bottom",
+    labels: {
+      boxWidth: 50,
+      color: "black",
+      font: {
+        size: 24,
+        weight: "bold",
+      },
+    },
+  },
+};
+
 var ctx = $("#myChart");
 var myChart;
 
@@ -50,68 +114,15 @@ const getReportChart = (
 
   myChart = new Chart(ctx, {
     // type: !allFilters && !monthByFilter ? "line" : "bar",
-    type: "bar",
+    type: window.screen.width > 768 ? "bar" : "line",
     data: getChartData(months, convertedData, allFilters, data),
     options: {
+      maintainAspectRatio: false,
       scales: {
-        x: {
-          beginAtZero: true,
-          categoryPercentage: 0.8,
-          barPercentage: 0.8,
-          display: true,
-          title: {
-            display: true,
-            text: !allFilters && monthByFilter ? "Subjects": "Months",
-            color: "#911",
-            font: {
-              family: "Comic Sans MS",
-              size: 20,
-              weight: "bold",
-              lineHeight: 1.2,
-            },
-            padding: { top: 20, left: 0, right: 0, bottom: 0 },
-          },
-        },
-        y: {
-          type: "linear",
-          beginAtZero: true,
-          max: 100, // Adjust this if your data range is different
-          ticks: {
-            stepSize: 10,
-            callback: function (value) {
-              return value;
-            },
-          },
-          display: true,
-          title: {
-            display: true,
-            text: "Percentage",
-            color: "#000000",
-            font: {
-              family: "Times",
-              size: 20,
-              style: "normal",
-              lineHeight: 1.2,
-              weight: "bold",
-            },
-            padding: { top: 20, left: 0, right: 0, bottom: 0 },
-          },
-        },
+        x: chartScalesX(allFilters),
+        y: chartScalesY(allFilters),
       },
-      // plugins: {
-      //   legend: {
-      //     display: true,
-      //     position: "bottom",
-      //     labels: {
-      //       boxWidth: 50,
-      //       color: "black",
-      //       font: {
-      //         size: 24,
-      //         weight: "bold",
-      //       },
-      //     },
-      //   },
-      // },
+      // plugins: {...chartPlugins},
     },
   });
 };
@@ -166,6 +177,9 @@ const handleGetChartFilter = (e, monthFilter) => {
         convertedData,
         false,
         data.responsePacket
+      );
+      handleMonthsShowHideAnimation(
+        monthFilter ? "monthsFilter" : "subjectFilter"
       );
     },
     error: function (error) {
@@ -250,7 +264,6 @@ const getChartData = (xAxisLabels, responseData = {}, allFilters, response) => {
     }
 
     for (let key in responseData) {
-      console.log("key ---- ", key);
       datasetsArr.push({
         label: key,
         data: [
@@ -260,6 +273,11 @@ const getChartData = (xAxisLabels, responseData = {}, allFilters, response) => {
             : 0,
         ],
         backgroundColor: [...bgColor],
+        barPercentage: 0.5,
+        barThickness: 6,
+        maxBarThickness: 8,
+        minBarLength: 2,
+        borderRadius: "10px",
       });
     }
   }
@@ -304,7 +322,7 @@ const getReport = () => {
       for (let month of monthNames) {
         monthName =
           monthName +
-          `<div class="col-lg-2 col-md-3 col-sm-3 d-flex justify-content-center align-items-center my-2"><button class="btn btn-primary mx-2 monthBtn" onclick="handleGetChartFilter(event, true)">${month}</button></div>`;
+          `<div class="col-lg-2 col-md-3 col-4 d-flex justify-content-center align-items-center my-2"><button class="btn btn-primary mx-2 monthBtn" onclick="handleGetChartFilter(event, true)">${month}</button></div>`;
       }
       $("#months").html(monthName);
 
@@ -312,7 +330,7 @@ const getReport = () => {
       for (let row of subjects) {
         subjectName =
           subjectName +
-          `<div class="col-lg-2 col-md-3 col-sm-3 d-flex justify-content-center align-items-center my-2 mx-3"><button class="btn btn-primary" data-subjectid="${row.subjectId}" onclick="handleGetChartFilter(event, false)">${row.subjectName}</button></div>`;
+          `<div class="col-lg-2 col-md-3 col-4 d-flex justify-content-center align-items-center my-2 mx-3"><button class="btn btn-primary" data-subjectid="${row.subjectId}" onclick="handleGetChartFilter(event, false)">${row.subjectName}</button></div>`;
       }
       $("#subjects").html(subjectName);
       getReportChart(false, months, convertedData);
@@ -339,6 +357,37 @@ $(document).ready(function () {
   }
   getReport();
 });
+
+const handleMonthsShowHideAnimation = (filterType = "byLabel") => {
+  if (window.screen.width <= 768) {
+    if (filterType === "byLabel") {
+      $("#monthsFilter").on("click", function () {
+        $(".monthsOpen, .monthsClose").toggleClass("monthsOpen monthsClose");
+        $(".subjectsOpen, .subjectsClose").removeClass("subjectsClose");
+        $("#subjects").addClass("subjectsClose");
+      });
+      $("#subjectsFilter").on("click", function () {
+        $(".subjectsOpen, .subjectsClose").toggleClass(
+          "subjectsOpen subjectsClose"
+        );
+        $(".monthsOpen, .monthsClose").removeClass("monthsOpen");
+        $("#months").addClass("monthsClose");
+      });
+    } else if (filterType === "monthsFilter") {
+      $(".monthsOpen, .monthsClose").toggleClass("monthsOpen monthsClose");
+      $(".subjectsOpen, .subjectsClose").removeClass("subjectsClose");
+      $("#subjects").addClass("subjectsClose");
+    } else if (filterType === "subjectFilter") {
+      $(".subjectsOpen, .subjectsClose").toggleClass(
+        "subjectsOpen subjectsClose"
+      );
+      $(".monthsOpen, .monthsClose").removeClass("monthsOpen");
+      $("#months").addClass("monthsClose");
+    }
+  }
+};
+
+handleMonthsShowHideAnimation();
 
 // **************** Search Mobile number nad go to the report page **************** //
 
