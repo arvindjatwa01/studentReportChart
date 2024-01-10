@@ -12,6 +12,7 @@
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
         #myChart {
@@ -56,6 +57,7 @@
                 transform-origin: 100% 0%;
                 height: 0;
             }
+
             .subjectsOpen {
                 -webkit-animation: conditionalOpen 1s normal forwards ease-in-out;
                 -moz-animation: conditionalOpen 1s normal forwards ease-in-out;
@@ -147,7 +149,8 @@
                 <div class="row my-2">
                     <div class="col-lg-12 col-sm-5 col-md-5 p-3 border-0 border-secondary rounded-3 shadow-lg filters">
                         <fieldset class="reset">
-                            <legend class="reset" id="monthsFilter">Filter By Month</legend>
+                            <legend class="reset" id="monthsFilter">Filter By Month <i
+                                    class="fa-solid fa-eye" id="montheFilterEye"></i></legend>
                             <div class="row monthsClose" id="months"></div>
                         </fieldset>
                     </div>
@@ -157,7 +160,8 @@
                     </div>
                     <div class="col-lg-12 col-sm-5 col-md-5 p-3 border-0 border-secondary rounded-3 shadow-lg filters">
                         <fieldset class="reset">
-                            <legend class="reset" id="subjectsFilter">Filter By Subject</legend>
+                            <legend class="reset" id="subjectsFilter">Filter By Subject <i class="fa-solid fa-eye" id="sujectFilterEye"></i>
+                            </legend>
                             <div class="row subjectsClose" id="subjects"></div>
                         </fieldset>
                     </div>

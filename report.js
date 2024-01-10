@@ -365,6 +365,16 @@ const handleMonthsShowHideAnimation = (filterType = "byLabel") => {
         $(".monthsOpen, .monthsClose").toggleClass("monthsOpen monthsClose");
         $(".subjectsOpen, .subjectsClose").removeClass("subjectsClose");
         $("#subjects").addClass("subjectsClose");
+        $("#sujectFilterEye").addClass("fa-eye");
+        $("#sujectFilterEye").removeClass("fa-eye-slash");
+
+        if ($("#montheFilterEye").hasClass("fa-eye")) {
+          $("#montheFilterEye").addClass("fa-eye-slash");
+          $("#montheFilterEye").removeClass("fa-eye");
+        } else if ($("#montheFilterEye").hasClass("fa-eye-slash")) {
+          $("#montheFilterEye").removeClass("fa-eye-slash");
+          $("#montheFilterEye").addClass("fa-eye");
+        }
       });
       $("#subjectsFilter").on("click", function () {
         $(".subjectsOpen, .subjectsClose").toggleClass(
@@ -372,17 +382,35 @@ const handleMonthsShowHideAnimation = (filterType = "byLabel") => {
         );
         $(".monthsOpen, .monthsClose").removeClass("monthsOpen");
         $("#months").addClass("monthsClose");
+        $("#montheFilterEye").addClass("fa-eye");
+        $("#montheFilterEye").removeClass("fa-eye-slash");
+
+        if ($("#sujectFilterEye").hasClass("fa-eye")) {
+          $("#sujectFilterEye").addClass("fa-eye-slash");
+          $("#sujectFilterEye").removeClass("fa-eye");
+        } else if ($("#sujectFilterEye").hasClass("fa-eye-slash")) {
+          $("#sujectFilterEye").removeClass("fa-eye-slash");
+          $("#sujectFilterEye").addClass("fa-eye");
+        }
       });
     } else if (filterType === "monthsFilter") {
       $(".monthsOpen, .monthsClose").toggleClass("monthsOpen monthsClose");
       $(".subjectsOpen, .subjectsClose").removeClass("subjectsClose");
       $("#subjects").addClass("subjectsClose");
+      $("#sujectFilterEye").addClass("fa-eye");
+      $("#sujectFilterEye").removeClass("fa-eye-slash");
+      $("#montheFilterEye").addClass("fa-eye");
+      $("#montheFilterEye").removeClass("fa-eye-slash");
     } else if (filterType === "subjectFilter") {
       $(".subjectsOpen, .subjectsClose").toggleClass(
         "subjectsOpen subjectsClose"
       );
       $(".monthsOpen, .monthsClose").removeClass("monthsOpen");
       $("#months").addClass("monthsClose");
+      $("#montheFilterEye").addClass("fa-eye");
+      $("#montheFilterEye").removeClass("fa-eye-slash");
+      $("#sujectFilterEye").addClass("fa-eye");
+      $("#sujectFilterEye").removeClass("fa-eye-slash");
     }
   }
 };
