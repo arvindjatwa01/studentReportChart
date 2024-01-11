@@ -31,13 +31,24 @@
             all: revert;
         }
 
+        #montheFilterEye,
+        #sujectFilterEye {
+            /* display: none; */
+        }
+
 
         @media only screen and (max-width: 768px) {
             #myChart {
                 /* position: relative; */
                 margin: auto;
-                height: 40vh;
-                width: 85vw;
+                height: 48vh;
+                width: 100vw;
+                transform: rotate(90deg);
+            }
+
+            #montheFilterEye,
+            #sujectFilterEye {
+                /* display: block; */
             }
 
             .monthsOpen {
@@ -149,8 +160,8 @@
                 <div class="row my-2">
                     <div class="col-lg-12 col-sm-5 col-md-5 p-3 border-0 border-secondary rounded-3 shadow-lg filters">
                         <fieldset class="reset">
-                            <legend class="reset" id="monthsFilter">Filter By Month <i
-                                    class="fa-solid fa-eye" id="montheFilterEye"></i></legend>
+                            <legend class="reset" id="monthsFilter">Filter By Month <i class="fa-solid fa-eye"
+                                    id="montheFilterEye"></i></legend>
                             <div class="row monthsClose" id="months"></div>
                         </fieldset>
                     </div>
@@ -160,7 +171,8 @@
                     </div>
                     <div class="col-lg-12 col-sm-5 col-md-5 p-3 border-0 border-secondary rounded-3 shadow-lg filters">
                         <fieldset class="reset">
-                            <legend class="reset" id="subjectsFilter">Filter By Subject <i class="fa-solid fa-eye" id="sujectFilterEye"></i>
+                            <legend class="reset" id="subjectsFilter">Filter By Subject <i class="fa-solid fa-eye"
+                                    id="sujectFilterEye"></i>
                             </legend>
                             <div class="row subjectsClose" id="subjects"></div>
                         </fieldset>
