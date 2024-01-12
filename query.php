@@ -29,10 +29,13 @@ if (isset($_GET['searchInput']) and $_GET['searchInput'] !== "") {
     // Fetch data from the result set
     $data = array();
     $userid = 0;
+    $userName = "";
     while ($row = mysqli_fetch_assoc($result)) {
         $userid = $row["dlb_u_id"];
+        $userName = $row["dlb_u_name"];
     }
     $data["userid"] = $userid;
+    $data["username"] = $userName;
     $data["useridencode"] = enc_dec($userid, "enc", "");
 
     // Return the data as JSON

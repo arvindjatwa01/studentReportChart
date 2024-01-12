@@ -52,7 +52,7 @@
                         } else {
                             Swal.fire({
                                 icon: 'info',
-                                title: 'Stuent Report not found!',
+                                title: 'Student Report not found!',
                                 text: '',
                             });
                         }

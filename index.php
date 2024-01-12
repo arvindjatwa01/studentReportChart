@@ -36,14 +36,18 @@
             /* display: none; */
         }
 
+        /* .barChart-fade-in {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        } */
 
         @media only screen and (max-width: 768px) {
-            #myChart {
+            #myChart2 {
                 /* position: relative; */
-                margin: auto;
-                height: 48vh;
-                width: 100vw;
-                transform: rotate(90deg);
+                /* margin: auto; */
+                height: 100% !important;
+                /* width: 80vw; */
+                /* transform: rotate(90deg); */
             }
 
             #montheFilterEye,
@@ -154,7 +158,7 @@
 
     <div class="container">
         <h1 class="mt-5 text-center">Student Report</h1>
-        <button class="btn btn-info mb-3" onclick="getReport()">Clear Filter</button>
+        <button class="btn btn-info mb-3" onclick="handleClearAllFilters()">Clear Filter</button>
         <div class="row">
             <div class="col-lg-5 col-md-12 col-sm-12 align-items-center ">
                 <div class="row my-2">
@@ -179,9 +183,10 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-7 col-md-12 col-sm-12 align-items-center">
-                <canvas id="myChart"></canvas>
+            <div class="col-lg-7 col-12 col-sm-12 align-items-center">
+                <!-- <canvas id="myChart" class="barChart-fade-in"></canvas> -->
             </div>
+            <canvas id="myChart2" class="barChart-fade-in"></canvas>
         </div>
     </div>
 
@@ -190,21 +195,9 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script> -->
-    <script src="./report.js"></script>
-    <script>
-        // var buttonClick = function () {
-        //     $(".monthsOpen, .monthsClose").toggleClass(
-        //         "monthsOpen monthsClose"
-        //     );
-        // };
-
-        // $("#monthsFilter").on("click", function () {
-        //     $(".monthsOpen, .monthsClose").toggleClass(
-        //         "monthsOpen monthsClose"
-        //     );
-        // });
-
-    </script>
+    <!-- <script src="./report.js"></script> -->
+    <script src="./studentReport.js"></script>
+    
 </body>
 
 </html>

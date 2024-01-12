@@ -1,22 +1,10 @@
-var urlParams = new URLSearchParams(window.location.search);
-var param1Value = urlParams.get("userReport");
+const urlParamsA = new URLSearchParams(window.location.search);
+const userReportParamValueA = urlParamsA.get("userReport");
+// Chart Vairables
 
-// Check parameters exist or not
-const checkParameters = () => {
-  if (!urlParams.has("userReport")) {
-    return false;
-  } else if (
-    param1Value === "" ||
-    param1Value === null ||
-    param1Value === undefined
-  ) {
-    return false;
-  }
-  return true;
-};
+var param1Value = urlParamsA.get("userReport");
 
 const months = [];
-const subjects = [];
 const filterMonths = [];
 const monthNames = [
   "Jan",
@@ -33,69 +21,101 @@ const monthNames = [
   "Dec",
 ];
 
-const chartScalesX = (allFilters, monthByFilter) => {
+
+// get the chart props data
+const getChartData = (xAxisLabels, responseData = {}, allFilters, response) => {
+  let datasetsArr = [];
+  if (allFilters) {
+    datasetsArr = Object.entries(responseData).map(([subName, subjectData]) => {
+      return { ...subjectData };
+    });
+  } else {
+    const bgColor = [];
+    for (let obj of response) {
+      if (!bgColor.includes(obj.bgColor)) {
+        bgColor.push(obj.bgColor);
+      }
+    }
+
+    for (let key in responseData) {
+      datasetsArr.push({
+        label: key,
+        data: [
+          ...responseData[key].data,
+          responseData[key] == responseData[key].lebel
+            ? responseData[key].data
+            : 0,
+        ],
+        backgroundColor: [...bgColor],
+        // barPercentage: 0.5,
+        // barThickness: 6,
+        // maxBarThickness: 8,
+        // minBarLength: 2,
+        borderRadius: "10px",
+      });
+    }
+  }
+
   return {
-    beginAtZero: true,
-    categoryPercentage: 0.8,
-    barPercentage: 0.8,
-    display: true,
-    title: {
-      display: true,
-      text: !allFilters && monthByFilter ? "Subjects" : "Months",
-      color: "#911",
-      font: {
-        family: "Comic Sans MS",
-        size: 20,
-        weight: "bold",
-        lineHeight: 1.2,
-      },
-      padding: { top: 20, left: 0, right: 0, bottom: 0 },
-    },
+    labels: xAxisLabels,
+    datasets: datasetsArr,
   };
 };
 
-const chartScalesY = (allFilters, monthByFilter) => {
-  return {
-    type: "linear",
-    beginAtZero: true,
-    max: 100, // Adjust this if your data range is different
-    ticks: {
-      stepSize: 10,
-      callback: function (value) {
-        return value;
-      },
+const getReport = () => {
+  $.ajax({
+    url: "ajaxReport.php",
+    type: "GET",
+    dataType: "json",
+    data: {
+      allFilters: 1,
+      monthFilter: 0,
+      monthNum: null,
+      subjectFilter: 0,
+      subjectId: null,
+      userReport: param1Value,
     },
-    display: true,
-    title: {
-      display: true,
-      text: "Percentage",
-      color: "#000000",
-      font: {
-        family: "Times",
-        size: 20,
-        style: "normal",
-        lineHeight: 1.2,
-        weight: "bold",
-      },
-      padding: { top: 20, left: 0, right: 0, bottom: 0 },
+    success: function (data) {
+      if (data.apiSuccess === 0) {
+        Swal.fire({
+          icon: "warning",
+          title: "Alert!",
+          text: "Somthing Went wrong Or Report not found!",
+          confirmButtonColor: "#FF7F50", // Customize confirm button color
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = "searchUser.php";
+          }
+        });
+        return;
+      }
+
+      const convertedData = getConvertedData(data.responsePacket);
+
+      // var monthName = "";
+      // // for (let month of months) {
+      // for (let month of monthNames) {
+      //   monthName =
+      //     monthName +
+      //     `<div class="col-lg-2 col-md-3 col-4 d-flex justify-content-center align-items-center my-2"><button class="btn btn-primary mx-2 monthBtn" onclick="handleGetChartFilter(event, true)">${month}</button></div>`;
+      // }
+      // $("#months").html(monthName);
+
+      // var subjectName = "";
+      // for (let row of subjects) {
+      //   subjectName =
+      //     subjectName +
+      //     `<div class="col-lg-2 col-md-3 col-4 d-flex justify-content-center align-items-center my-2 mx-3"><button class="btn btn-primary" data-subjectid="${row.subjectId}" onclick="handleGetChartFilter(event, false)">${row.subjectName}</button></div>`;
+      // }
+      // $("#subjects").html(subjectName);
+      getReportChart(false, months, convertedData);
     },
-  };
+    error: function (error) {
+      console.error("Error:", error);
+    },
+  });
 };
 
-const chartPlugins = {
-  legend: {
-    display: true,
-    position: "bottom",
-    labels: {
-      boxWidth: 50,
-      color: "black",
-      font: {
-        size: 24,
-        weight: "bold",
-      },
-    },
-  },
-};
 
 var ctx = $("#myChart");
 var myChart;
@@ -114,13 +134,17 @@ const getReportChart = (
 
   myChart = new Chart(ctx, {
     // type: !allFilters && !monthByFilter ? "line" : "bar",
-    type: window.screen.width > 768 ? "bar" : "line",
+    type: "bar",
     data: getChartData(months, convertedData, allFilters, data),
     options: {
-      maintainAspectRatio: false,
-      scales: {
-        x: chartScalesX(allFilters),
-        y: chartScalesY(allFilters),
+      // maintainAspectRatio: false,
+      // scales: {
+      //   x: chartScalesX(allFilters),
+      //   y: chartScalesY(allFilters),
+      // },
+      animation: {
+        duration: 5000, // Animation duration in milliseconds
+        easing: "easeInOutQuart", // Easing function for the animation
       },
       // plugins: {...chartPlugins},
     },
@@ -149,7 +173,7 @@ const handleGetChartFilter = (e, monthFilter) => {
       subjectFilter: !monthFilter ? 1 : 0,
       subjectId: subjectId,
       // subjectName: monthFilter ? null : e.target.innerText,
-      userReport: checkParameters() ? param1Value : "",
+      userReport: param1Value,
     },
     success: function (data) {
       if (data.apiSuccess === 0) {
@@ -235,8 +259,8 @@ const getConvertedData = (
         data: [],
         backgroundColor: item.bgColor,
         borderColor: item.borderColor,
-        borderWidth: 1,
-        barThickness: 10,
+        // borderWidth: 1,
+        // barThickness: 10,
         // type: !monthFilter && item.subName === "English" ? "line": "bar",
       };
     }
@@ -245,116 +269,50 @@ const getConvertedData = (
       monthFilter ? item.month_name : subjectFilter ? subject : subject
     ].data.push(Number(item.average_percentage));
   });
+
   return subresult;
 };
 
-// get the chart props data
-const getChartData = (xAxisLabels, responseData = {}, allFilters, response) => {
-  let datasetsArr = [];
-  if (allFilters) {
-    datasetsArr = Object.entries(responseData).map(([subName, subjectData]) => {
-      return { ...subjectData };
-    });
-  } else {
-    const bgColor = [];
-    for (let obj of response) {
-      if (!bgColor.includes(obj.bgColor)) {
-        bgColor.push(obj.bgColor);
-      }
-    }
+// // get the chart props data
+// const getChartData = (xAxisLabels, responseData = {}, allFilters, response) => {
+//   let datasetsArr = [];
+//   if (allFilters) {
+//     datasetsArr = Object.entries(responseData).map(([subName, subjectData]) => {
+//       return { ...subjectData };
+//     });
+//   } else {
+//     const bgColor = [];
+//     for (let obj of response) {
+//       if (!bgColor.includes(obj.bgColor)) {
+//         bgColor.push(obj.bgColor);
+//       }
+//     }
 
-    for (let key in responseData) {
-      datasetsArr.push({
-        label: key,
-        data: [
-          ...responseData[key].data,
-          responseData[key] == responseData[key].lebel
-            ? responseData[key].data
-            : 0,
-        ],
-        backgroundColor: [...bgColor],
-        barPercentage: 0.5,
-        barThickness: 6,
-        maxBarThickness: 8,
-        minBarLength: 2,
-        borderRadius: "10px",
-      });
-    }
-  }
-  return {
-    labels: xAxisLabels,
-    datasets: datasetsArr,
-  };
-};
-
-const getReport = () => {
-  $.ajax({
-    url: "ajaxReport.php",
-    type: "GET",
-    dataType: "json",
-    data: {
-      allFilters: 1,
-      monthFilter: 0,
-      monthNum: null,
-      subjectFilter: 0,
-      subjectId: null,
-      userReport: checkParameters() ? param1Value : "",
-    },
-    success: function (data) {
-      if (data.apiSuccess === 0) {
-        Swal.fire({
-          icon: "warning",
-          title: "Alert!",
-          text: "Somthing Went wrong Or Report not found!",
-          confirmButtonColor: "#FF7F50", // Customize confirm button color
-        }).then((result) => {
-          if (result.isConfirmed) {
-            window.location.href = "searchUser.php";
-          }
-        });
-        return;
-      }
-
-      const convertedData = getConvertedData(data.responsePacket);
-
-      var monthName = "";
-      // for (let month of months) {
-      for (let month of monthNames) {
-        monthName =
-          monthName +
-          `<div class="col-lg-2 col-md-3 col-4 d-flex justify-content-center align-items-center my-2"><button class="btn btn-primary mx-2 monthBtn" onclick="handleGetChartFilter(event, true)">${month}</button></div>`;
-      }
-      $("#months").html(monthName);
-
-      var subjectName = "";
-      for (let row of subjects) {
-        subjectName =
-          subjectName +
-          `<div class="col-lg-2 col-md-3 col-4 d-flex justify-content-center align-items-center my-2 mx-3"><button class="btn btn-primary" data-subjectid="${row.subjectId}" onclick="handleGetChartFilter(event, false)">${row.subjectName}</button></div>`;
-      }
-      $("#subjects").html(subjectName);
-      getReportChart(false, months, convertedData);
-    },
-    error: function (error) {
-      console.error("Error:", error);
-    },
-  });
-};
+//     for (let key in responseData) {
+//       datasetsArr.push({
+//         label: key,
+//         data: [
+//           ...responseData[key].data,
+//           responseData[key] == responseData[key].lebel
+//             ? responseData[key].data
+//             : 0,
+//         ],
+//         backgroundColor: [...bgColor],
+//         // barPercentage: 0.5,
+//         // barThickness: 6,
+//         // maxBarThickness: 8,
+//         // minBarLength: 2,
+//         borderRadius: "10px",
+//       });
+//     }
+//   }
+//   return {
+//     labels: xAxisLabels.slice(5),
+//     datasets: datasetsArr,
+//   };
+// };
 
 $(document).ready(function () {
-  if (!checkParameters()) {
-    Swal.fire({
-      icon: "warning",
-      title: "Alert!",
-      text: "Somthing Went wrong Or Report not found!",
-      confirmButtonColor: "#FF7F50", // Customize confirm button color
-    }).then((result) => {
-      if (result.isConfirmed) {
-        window.location.href = "searchUser.php";
-      }
-    });
-    return;
-  }
   getReport();
 });
 
@@ -436,7 +394,6 @@ $("#searchBtn").on("click", function (e) {
       data: { searchInput: 1, mobileNo: mobileNo },
       success: function (data) {
         if (data.userid !== 0) {
-          console.log(data);
           // var encodedData = encodeURIComponent(data.userid);
           var url = `index.php?userReport=${data.useridencode}`;
 
@@ -449,7 +406,6 @@ $("#searchBtn").on("click", function (e) {
             text: "",
           });
         }
-        console.log("query.php", data);
       },
       error: function (error) {
         console.log("error: " + error);
