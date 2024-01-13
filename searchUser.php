@@ -14,19 +14,35 @@
 <body>
 
     <div class="container mt-5">
+        <civ class="col-12">
+            <h4>Search Mobile Number</h4>
+        </civ>
         <div class="position-relative">
             <div class="input-group">
-                <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search"
-                    aria-describedby="search-addon" id="searchInput" />
+                <input type="number" class="form-control rounded" placeholder="Search" aria-label="Search"
+                    aria-describedby="search-addon" min="10" max="10" id="searchInput"
+                    oninput="handleChangeNumber(this)" onkeyup={handleSeachOnEnter(event)} />
                 <button type="button" id="searchBtn" class="btn btn-primary" data-mdb-ripple-init>search</button>
             </div>
+            <div id="emailHelp" class="form-text">You can search by Mobile Number.</div>
         </div>
         <div id="searchInputErr" class="form-text"></div>
     </div>
 
     <script>
 
-        $("#searchBtn").on("click", function (e) {
+        const handleChangeNumber = (input) => {
+            if (input.value.length > 10) {
+                input.value = input.value.slice(0, 10);
+            }
+            $("#searchInputErr").text("");
+        }
+
+        const handleSeachOnEnter = (e) => {
+            if (e.key === "Enter") handleSearchData();
+        }
+
+        const handleSearchData = () => {
             const mobileNo = $("#searchInput").val();
             if (!mobileNo || mobileNo === "" || mobileNo.length === 0) {
                 $("#searchInputErr").text("Please enter mobile number");
@@ -52,11 +68,10 @@
                         } else {
                             Swal.fire({
                                 icon: 'info',
-                                title: 'Stuent Report not found!',
+                                title: 'Student Report not found!',
                                 text: '',
                             });
                         }
-                        console.log("query.php", data)
                     },
                     error: function (error) {
                         console.log("error: " + error);
@@ -64,7 +79,9 @@
                 });
 
             }
-        })
+        }
+
+        $("#searchBtn").on("click", handleSearchData)
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
