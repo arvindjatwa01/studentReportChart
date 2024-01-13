@@ -115,7 +115,7 @@ const handleSwatWarning = () => {
   });
 };
 
-let canvaTagId = $("#myChart2");
+let canvaTagId = $("#myChart");
 let studentReportChart;
 
 // get the student Report Chart
@@ -215,6 +215,8 @@ const getStudentReport = () => {
       if (response.apiSuccess === 0) handleSwatWarning();
       const result = response.responsePacket;
 
+      $("#studentName").text(`${result[0].studentName} Report`)
+
       // set months name for month Wise Filter
       let monthsList = "";
       for (let monthName of allMonths) {
@@ -305,10 +307,12 @@ const handleSubjectFilterChart = (subjectId, e) => {
   });
 };
 
+// clear all filter 
 const handleClearAllFilters = () => {
   getStudentReport();
 };
 
+// show hide the Months name 
 const handleShowHideMonthsName = () => {
   $(".monthsOpen, .monthsClose").toggleClass("monthsOpen monthsClose");
   $(".subjectsOpen, .subjectsClose").removeClass("subjectsClose");
@@ -323,6 +327,7 @@ const handleShowHideMonthsName = () => {
   }
 };
 
+// Show hide Subjects name
 const handleShowHideSubjects = () => {
   $(".subjectsOpen, .subjectsClose").toggleClass("subjectsOpen subjectsClose");
   $(".monthsOpen, .monthsClose").removeClass("monthsOpen");
@@ -338,6 +343,7 @@ const handleShowHideSubjects = () => {
   }
 };
 
+// Filter animations
 const handleFilterAnimation = (filterType = "byLabel") => {
   if (window.screen.width <= 768) {
     if (filterType === "byLabel") {
@@ -361,6 +367,7 @@ const handleFilterAnimation = (filterType = "byLabel") => {
     }
   }
 };
+
 $(document).ready(function () {
   getStudentReport();
   handleFilterAnimation();

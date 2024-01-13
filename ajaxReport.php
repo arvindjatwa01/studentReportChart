@@ -42,11 +42,13 @@ $query = "SELECT
     s.borderColor,
     MONTH(r.reportDate) AS report_month,
     MONTHNAME(r.reportDate) AS month_name,
-    AVG(r.totalPer) AS average_percentage
+    AVG(r.totalPer) AS average_percentage,
+    user.dlb_u_name AS studentName
 FROM 
     subject s
  JOIN 
     studentReportChart r ON s.subId = r.subId
+ JOIN  wifi_users user ON user.dlb_u_id = r.dlb_u_id 
 WHERE r.dlb_u_id =$userid and 
     r.reportDate >= '$one_year_ago'";
 if ($allFilters > 0) {
