@@ -86,7 +86,7 @@ const chartPlugins = {
 
 // Chart Vairables
 let subjects = [];
-const examMonths = [];
+let examMonths = [];
 
 const urlParams = new URLSearchParams(window.location.search);
 const userReportParamValue = urlParams.get("userReport");
@@ -127,14 +127,17 @@ const getStudentReportChart = (response, noFilter, byMonth, bySubject) => {
   if (byMonth) {
     chartLabels = subjects.map((sub) => sub.subjectName);
   } else {
-    chartLabels = allMonths.map((month) => month.substring(0, 3)).slice(5);
+    chartLabels = examMonths.map((month) => month.substring(0, 3)).slice(-6);
   }
 
   let datasets = [];
   const datasetsObj = handleGetChartDataSets(response, byMonth);
   if (noFilter) {
     datasets = Object.entries(datasetsObj).map(([subName, subjectData]) => {
-      return { ...subjectData, data: subjectData["data"].slice(5) };
+      return {
+        ...subjectData,
+        data: subjectData["data"].slice(-6),
+      };
     });
   } else {
     const bgColor = response.map((obj) => obj.bgColor);
@@ -215,19 +218,28 @@ const getStudentReport = () => {
       if (response.apiSuccess === 0) handleSwatWarning();
       const result = response.responsePacket;
 
-      $("#studentName").text(`${result[0].studentName} Report`)
-
-      // set months name for month Wise Filter
-      let monthsList = "";
-      for (let monthName of allMonths) {
-        monthsList =
-          monthsList +
-          `<div class="col-lg-2 col-md-3 col-4 d-flex justify-content-center align-items-center my-2"><button class="btn btn-primary mx-2 monthBtn" onclick="handleMonthFilterChart('${monthName}', event)">
-            ${monthName.substr(0, 3)}</button></div>`;
-      }
-      $("#months").html(monthsList);
+      $("#studentName").text(`${result[0].studentName} Report`);
 
       if (result.length !== 0) {
+        // map exam Months and remvoe duplicate name
+        const allExamMonths = Array.from(
+          new Set(result.map((obj) => obj.month_name))
+        );
+
+        examMonths = [...allExamMonths];
+
+        // set months name for month Wise Filter
+        let monthsList = "";
+        for (let monthName of allMonths) {
+          if (examMonths.includes(monthName)) {
+            monthsList =
+              monthsList +
+              `<div class="col-lg-2 col-md-3 col-4 d-flex justify-content-center align-items-center my-2"><button class="btn btn-primary mx-2 monthBtn" onclick="handleMonthFilterChart('${monthName}', event)">
+              ${monthName.substr(0, 3)}</button></div>`;
+          }
+        }
+        $("#months").html(monthsList);
+
         // map subjects names and remove duplcate name
         const allSubject = Array.from(
           new Set(
@@ -307,12 +319,12 @@ const handleSubjectFilterChart = (subjectId, e) => {
   });
 };
 
-// clear all filter 
+// clear all filter
 const handleClearAllFilters = () => {
   getStudentReport();
 };
 
-// show hide the Months name 
+// show hide the Months name
 const handleShowHideMonthsName = () => {
   $(".monthsOpen, .monthsClose").toggleClass("monthsOpen monthsClose");
   $(".subjectsOpen, .subjectsClose").removeClass("subjectsClose");
